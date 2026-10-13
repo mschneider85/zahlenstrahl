@@ -483,7 +483,7 @@
 
     <section class="card tip tip-mobile">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      <div><b>In Word einfügen:</b> „Für Word kopieren“ klicken, dann in Word <b>Strg+V</b>. Das Bild wird in hoher Auflösung eingefügt. Für eine echte Vektorgrafik: <b>SVG</b> herunterladen und in Word über <i>Einfügen › Bilder</i> einfügen.</div>
+      <div><b>In Word einfügen:</b> „Für Word kopieren“ klicken, dann in Word <b>Strg+V</b>. Die Grafik wird als Vektorgrafik eingefügt (Chrome oder Edge). Alternativ: <b>SVG</b> herunterladen und in Word über <i>Einfügen › Bilder</i> einfügen.</div>
     </section>
     <p class="hint">Mehrere Werte mit Semikolon oder Leerzeichen trennen, z.&nbsp;B. <b>30; 50; 70</b>. Dezimalzahlen mit Komma oder Punkt.</p>
   </form>
@@ -519,7 +519,7 @@
 
     <section class="card tip">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      <div><b>In Word einfügen:</b> „Für Word kopieren“ klicken, dann in Word <b>Strg+V</b>. Das Bild wird in hoher Auflösung eingefügt. Für eine echte Vektorgrafik: <b>SVG</b> herunterladen und in Word über <i>Einfügen › Bilder</i> einfügen.</div>
+      <div><b>In Word einfügen:</b> „Für Word kopieren“ klicken, dann in Word <b>Strg+V</b>. Die Grafik wird als Vektorgrafik eingefügt (Chrome oder Edge). Alternativ: <b>SVG</b> herunterladen und in Word über <i>Einfügen › Bilder</i> einfügen.</div>
     </section>
   </aside>
 </div>
@@ -760,7 +760,7 @@ ${solutions.join('\n')}
     t.classList.toggle('err', !!isError);
     t.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+    toastTimer = setTimeout(() => t.classList.remove('show'), isError ? 5000 : 2600);
   }
 
   function fileName(ext) {
@@ -834,21 +834,27 @@ ${solutions.join('\n')}
   $('copyWord').addEventListener('click', async () => {
     if (!currentSvg) return;
     const svg = currentSvg;
-    const pngPromise = renderPng(svg);
-    try {
-      if (!navigator.clipboard || typeof ClipboardItem === 'undefined') throw new Error('unsupported');
-      // Word picks the best format it understands: SVG where supported, otherwise the high-res PNG
+    if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+      toast('Kopieren nicht möglich – bitte SVG herunterladen', true);
+      return;
+    }
+    // Only SVG on the clipboard: if a PNG is offered too, Word prefers the bitmap
+    const svgSupported = typeof ClipboardItem.supports !== 'function' || ClipboardItem.supports('image/svg+xml');
+    if (svgSupported) {
       try {
         await navigator.clipboard.write([new ClipboardItem({
-          'image/png': pngPromise,
           'image/svg+xml': new Blob([svg], { type: 'image/svg+xml' }),
         })]);
-      } catch {
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromise })]);
-      }
-      toast('✓ Kopiert – jetzt in Word mit Strg+V einfügen');
+        toast('✓ Vektorgrafik kopiert – jetzt in Word mit Strg+V einfügen');
+        return;
+      } catch { /* fall through to PNG */ }
+    }
+    // Browsers without SVG clipboard support (e.g. Firefox, Safari): high-res bitmap instead
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': renderPng(svg) })]);
+      toast('Dieser Browser kann keine Vektorgrafik kopieren – als Bild kopiert. Für Vektor: Chrome/Edge oder SVG herunterladen.', true);
     } catch {
-      toast('Kopieren nicht möglich – bitte SVG oder PNG herunterladen', true);
+      toast('Kopieren nicht möglich – bitte SVG herunterladen', true);
     }
   });
 
