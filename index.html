@@ -202,6 +202,75 @@
   .toggles { display: flex; flex-direction: column; gap: 10px; }
   .divider { height: 1px; background: var(--border); margin: 2px 0; }
 
+  /* ---------- Chip list (number tokens) ---------- */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 4px 4px 4px 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: text;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .chips:hover { border-color: #b7bdd0; }
+  .chips:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, .15); }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 26px;
+    padding: 0 3px 0 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: #3730a3;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    animation: chip-in .14s ease-out;
+  }
+  @keyframes chip-in { from { transform: scale(.85); opacity: 0; } }
+  .chip button {
+    width: 20px; height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #6366f1;
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .chip button:hover { background: rgba(79, 70, 229, .14); color: #312e81; }
+  .chip button svg { width: 12px; height: 12px; }
+  .chip.outside { background: var(--error-soft); color: var(--error); }
+  .chip.outside button { color: var(--error); }
+  .chips .chip-entry {
+    flex: 1 0 64px;
+    min-width: 64px;
+    height: 28px;
+    border: none;
+    padding: 0 4px;
+    box-shadow: none;
+    background: transparent;
+  }
+  .chips .chip-entry:focus { box-shadow: none; }
+  .chips .chip-entry.invalid { color: var(--error); animation: shake .25s; }
+  @keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+  .chip-add {
+    width: 28px; height: 28px;
+    padding: 0;
+    border-radius: 7px;
+    border: none;
+    background: var(--surface-2);
+    color: var(--muted);
+    justify-content: center;
+    flex: none;
+  }
+  .chip-add:hover { background: var(--accent-soft); color: var(--accent); }
+
   .hint {
     font-size: 12px;
     color: var(--muted);
@@ -384,14 +453,21 @@
     <section class="card">
       <div class="card-head"><div class="step-no">1</div><h2>Bereich &amp; Striche</h2></div>
       <div class="card-body">
-        <div class="row row-3">
+        <div class="row">
           <label class="field"><span>Startzahl</span><input id="start" type="text" inputmode="decimal" value="0"></label>
           <label class="field"><span>Endzahl</span><input id="end" type="text" inputmode="decimal" value="100"></label>
-          <label class="field"><span>Schrittweite</span><input id="step" type="text" inputmode="decimal" value="1"></label>
         </div>
         <div class="row">
+          <label class="field"><span>Schrittweite</span><input id="step" type="text" inputmode="decimal" value="1"></label>
           <label class="field"><span>Lange Striche alle</span><input id="majorStep" type="text" inputmode="decimal" value="10" placeholder="leer = keine"></label>
-          <label class="field"><span>Keine Striche bei</span><input id="tickExceptions" type="text" placeholder="z. B. 35; 65"></label>
+        </div>
+        <div class="field">
+          <span id="tickExceptions-label">Keine Striche bei</span>
+          <div class="chips" data-target="tickExceptions" role="group" aria-labelledby="tickExceptions-label">
+            <input type="hidden" id="tickExceptions" value="">
+            <input class="chip-entry" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Zahl" aria-label="Keine Striche bei: Zahl hinzufügen">
+            <button class="chip-add" type="button" title="Hinzufügen" aria-label="Hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
         </div>
         <div class="field">
           <span>Striche zeichnen</span>
@@ -427,8 +503,15 @@
         <div id="modeStep" class="card-body" style="padding:0">
           <div class="row">
             <label class="field"><span>Beschriften alle</span><input id="labelStep" type="text" inputmode="decimal" value="10"></label>
-            <label class="field"><span>Nicht beschriften</span><input id="exceptions" type="text" placeholder="z. B. 30; 50; 70"></label>
           </div>
+          <div class="field">
+          <span id="exceptions-label">Nicht beschriften</span>
+          <div class="chips" data-target="exceptions" role="group" aria-labelledby="exceptions-label">
+            <input type="hidden" id="exceptions" value="">
+            <input class="chip-entry" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Zahl" aria-label="Nicht beschriften: Zahl hinzufügen">
+            <button class="chip-add" type="button" title="Hinzufügen" aria-label="Hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+        </div>
           <label class="toggle">
             <span class="t-text"><b>Start und Ende immer beschriften</b></span>
             <input id="labelEnds" type="checkbox"><span class="switch"></span>
@@ -436,7 +519,14 @@
         </div>
 
         <div id="modeOnly" class="hidden">
-          <label class="field"><span>Nur diese Werte beschriften</span><input id="onlyValues" type="text" placeholder="z. B. 0; 50; 100"></label>
+<div class="field">
+          <span id="onlyValues-label">Nur diese Werte beschriften</span>
+          <div class="chips" data-target="onlyValues" role="group" aria-labelledby="onlyValues-label">
+            <input type="hidden" id="onlyValues" value="">
+            <input class="chip-entry" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Zahl" aria-label="Nur diese Werte beschriften: Zahl hinzufügen">
+            <button class="chip-add" type="button" title="Hinzufügen" aria-label="Hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+        </div>
         </div>
 
         <label class="toggle">
@@ -450,11 +540,15 @@
     <section class="card">
       <div class="card-head"><div class="step-no">3</div><h2>Kästchen zum Ausfüllen</h2></div>
       <div class="card-body">
-        <label class="field">
-          <span>Zahlen, die der Schüler eintragen soll</span>
-          <input id="boxValues" type="text" placeholder="z. B. 37; 64; 85">
+<div class="field">
+          <span id="boxValues-label">Zahlen, die der Schüler eintragen soll</span>
+          <div class="chips" data-target="boxValues" role="group" aria-labelledby="boxValues-label">
+            <input type="hidden" id="boxValues" value="">
+            <input class="chip-entry" type="text" inputmode="decimal" enterkeyhint="done" placeholder="Zahl" aria-label="Zahlen, die der Schüler eintragen soll: Zahl hinzufügen">
+            <button class="chip-add" type="button" title="Hinzufügen" aria-label="Hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
           <small>Leeres Kästchen mit Pfeil auf die Stelle – die Beschriftung dort wird ausgeblendet.</small>
-        </label>
+        </div>
         <label class="toggle">
           <span class="t-text"><b>Lösungen eintragen</b><small>Zahlen rot in die Kästchen – fürs Lösungsblatt</small></span>
           <input id="showSolutions" type="checkbox"><span class="switch"></span>
@@ -485,7 +579,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
       <div><b>In Word einfügen:</b> „Für Word kopieren“ klicken, dann in Word <b>Strg+V</b>. Die Grafik wird als Vektorgrafik eingefügt (Chrome oder Edge). Alternativ: <b>SVG</b> herunterladen und in Word über <i>Einfügen › Bilder</i> einfügen.</div>
     </section>
-    <p class="hint">Mehrere Werte mit Semikolon oder Leerzeichen trennen, z.&nbsp;B. <b>30; 50; 70</b>. Dezimalzahlen mit Komma oder Punkt.</p>
+    <p class="hint">Bei Zahlenlisten: Zahl eintippen und <b>Enter</b> oder <b>+</b> drücken. Mit <b>×</b> wieder entfernen. Dezimalzahlen mit Komma oder Punkt.</p>
   </form>
 
   <aside class="output">
@@ -725,6 +819,8 @@ ${solutions.join('\n')}
   }
 
   function render() {
+    const boxChips = document.querySelector('.chips[data-target=boxValues]');
+    if (boxChips && boxChips._mark) boxChips._mark(parseNum($('start').value), parseNum($('end').value));
     const mode = radio('mode');
     $('modeStep').classList.toggle('hidden', mode !== 'step');
     $('modeOnly').classList.toggle('hidden', mode !== 'only');
@@ -748,6 +844,7 @@ ${solutions.join('\n')}
 
     currentSvg = buildSvg(c);
     preview.innerHTML = currentSvg;
+
     const svgEl = preview.querySelector('svg');
     currentSize = { w: +svgEl.getAttribute('width'), h: +svgEl.getAttribute('height') };
     $('meta').textContent = `${currentSize.w} × ${currentSize.h} px`;
@@ -883,8 +980,97 @@ ${solutions.join('\n')}
     }
   });
 
+  // ---------- Chip lists: hidden input keeps "a; b; c", so parsing/rendering stays the same ----------
+  const X_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  const chipFormat = v => String(v).replace('.', ',').replace(/^-/, '\u2212');
+
+  function setupChips(box) {
+    const hidden = $(box.dataset.target);
+    const entry = box.querySelector('.chip-entry');
+    const addBtn = box.querySelector('.chip-add');
+    let values = [];
+
+    const sync = () => {
+      box.querySelectorAll('.chip').forEach(el => el.remove());
+      for (const v of values) {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.dataset.value = v;
+        chip.innerHTML = `<span>${chipFormat(v)}</span><button type="button" aria-label="${chipFormat(v)} entfernen">${X_ICON}</button>`;
+        chip.querySelector('button').addEventListener('click', e => {
+          e.stopPropagation();
+          values = values.filter(x => x !== v);
+          commit();
+          entry.focus();
+        });
+        box.insertBefore(chip, entry);
+      }
+      entry.placeholder = values.length ? '' : 'Zahl';
+    };
+    const commit = () => {
+      hidden.value = values.join('; ');
+      sync();
+      hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    // Accepts one or several numbers (pasted "30; 50; 70" works too)
+    const addFromEntry = () => {
+      const text = entry.value.trim();
+      if (!text) return true;
+      const { values: nums, bad } = parseList(text);
+      if (bad.length) {
+        entry.classList.remove('invalid');
+        void entry.offsetWidth; // restart shake animation
+        entry.classList.add('invalid');
+        return false;
+      }
+      for (const v of nums) if (!containsValue(values, v)) values.push(v);
+      values.sort((a, b) => a - b);
+      entry.value = '';
+      commit();
+      return true;
+    };
+
+    entry.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ';' || e.key === ' ') {
+        e.preventDefault();
+        addFromEntry();
+      } else if (e.key === 'Backspace' && entry.value === '' && values.length) {
+        values.pop();
+        commit();
+      }
+    });
+    entry.addEventListener('input', () => entry.classList.remove('invalid'));
+    entry.addEventListener('paste', () => setTimeout(addFromEntry));
+    entry.addEventListener('blur', () => { if (!addFromEntry()) entry.value = ''; });
+    addBtn.addEventListener('click', e => { e.stopPropagation(); addFromEntry(); entry.focus(); });
+    box.addEventListener('click', e => { if (e.target === box) entry.focus(); });
+
+    return {
+      reset() { values = []; hidden.value = ''; entry.value = ''; // hidden inputs are not cleared by form.reset()
+        entry.classList.remove('invalid'); sync(); },
+      markOutside(start, end) {
+        box.querySelectorAll('.chip').forEach(el => {
+          const v = +el.dataset.value;
+          el.classList.toggle('outside', Number.isFinite(start) && Number.isFinite(end) && (v < start || v > end));
+        });
+      },
+    };
+  }
+
+  const chipLists = [...document.querySelectorAll('.chips')].map(box => {
+    const api = setupChips(box);
+    box._mark = api.markOutside; // used by render() to flag box values outside the number line
+    return api;
+  });
+  // Entry inputs must not trigger a render on every keystroke; only the hidden value counts
+  document.querySelectorAll('.chip-entry').forEach(el => {
+    el.addEventListener('input', e => e.stopPropagation());
+    el.addEventListener('change', e => e.stopPropagation());
+  });
+
   $('reset').addEventListener('click', () => {
     $('controls').reset();
+    chipLists.forEach(c => c.reset());
     render();
   });
 
