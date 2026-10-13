@@ -73,12 +73,6 @@
   .settings { display: flex; flex-direction: column; gap: 16px; }
   .output { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
 
-  @media (max-width: 960px) {
-    .layout { grid-template-columns: 1fr; padding: 16px; }
-    .output { position: static; order: -1; }
-    .topbar-inner { padding: 12px 16px; }
-    .canvas { min-height: 0; padding: 16px 10px; }
-  }
 
   /* ---------- Cards ---------- */
   .card {
@@ -327,6 +321,39 @@
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
   .toast.err { background: var(--error); }
+  /* ---------- Mobile: preview pinned to the top while scrolling the settings ---------- */
+  .tip-mobile { display: none; }
+  @media (max-width: 960px) {
+    .layout { grid-template-columns: 1fr; padding: 0 16px 24px; gap: 16px; }
+    .topbar-inner { padding: 12px 16px; }
+    .output {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      order: -1;
+      margin: 0 -16px;
+      padding: 10px 16px;
+      background: rgba(243, 244, 248, .92);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .output .tip { display: none; }
+    .tip-mobile { display: flex; }
+    .preview-card .card-head { padding: 10px 12px 0; }
+    .canvas { margin: 8px 12px; padding: 10px 8px; min-height: 0; background-size: 12px 12px; }
+    #preview svg { max-height: 28vh; width: auto; }
+    .status { margin: 0 12px 8px; padding: 6px 10px; font-size: 12.5px; }
+    .toolbar { padding: 8px 12px; gap: 6px; flex-wrap: nowrap; }
+    .toolbar button { height: 34px; padding: 0 10px; font-size: 13px; }
+    .toolbar .spacer { display: none; }
+    .toolbar .lbl-long { display: none; }
+    .settings .card:first-child { margin-top: 0; }
+  }
+  @media (max-width: 380px) {
+    .toolbar button { padding: 0 8px; gap: 5px; }
+    .row-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 </style>
 </head>
 <body>
@@ -454,6 +481,10 @@
       </div>
     </section>
 
+    <section class="card tip tip-mobile">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <div><b>In Word einfügen:</b> „Für Word kopieren“ klicken, dann in Word <b>Strg+V</b>. Das Bild wird in hoher Auflösung eingefügt. Für eine echte Vektorgrafik: <b>SVG</b> herunterladen und in Word über <i>Einfügen › Bilder</i> einfügen.</div>
+    </section>
     <p class="hint">Mehrere Werte mit Semikolon oder Leerzeichen trennen, z.&nbsp;B. <b>30; 50; 70</b>. Dezimalzahlen mit Komma oder Punkt.</p>
   </form>
 
@@ -468,7 +499,7 @@
       <div class="toolbar">
         <button id="copyWord" class="primary" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
-          Für Word kopieren
+          <span>Für Word<span class="lbl-long"> kopieren</span></span>
         </button>
         <button id="dlSvg" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
@@ -481,7 +512,7 @@
         <div class="spacer"></div>
         <button id="copySvg" class="ghost" type="button" title="SVG-Quelltext in die Zwischenablage">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-          SVG-Code
+          <span class="lbl-long">SVG-Code</span>
         </button>
       </div>
     </section>
